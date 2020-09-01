@@ -2,11 +2,11 @@
 
 export class Endpoints {
     private formatedUrl: string;
-    constructor(public readonly baseUrl: string, public readonly port = 80) {
-        this.formatedUrl = baseUrl + ':' + port + '/api';
+    constructor(public readonly secure: boolean, public readonly baseUrl: string, public readonly port = 80) {
+        this.formatedUrl = secure ? 'https://' : 'http://' + baseUrl + ':' + port + '/api';
     }
 
-    public bots() {
+    get bots() {
         return {
             index: () => this.formatedUrl + '/bots/',
             id: (botId: string) => this.formatedUrl + '/bots/' + botId,
@@ -14,7 +14,7 @@ export class Endpoints {
         }
     }
 
-    public users() {
+    get users() {
         return {
             index: () => this.formatedUrl + '/users/',
             id: (userId: string) => this.formatedUrl + '/users/' + userId,

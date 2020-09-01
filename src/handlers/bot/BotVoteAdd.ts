@@ -12,6 +12,9 @@ export default class BotPacket implements IPacket {
 
         const bot = await this.core.cache.fetchBot(botId);
         const user = await this.core.cache.fetchUser(userId);
-        this.core.emit('onBotVoteAdd', bot, user, votes);
+        if (!bot || !user)
+            return;
+
+        this.core.emit('botVoteAdd', bot, user, votes);
     }
 }

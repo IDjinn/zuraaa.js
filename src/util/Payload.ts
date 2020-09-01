@@ -23,9 +23,7 @@ export function payloadToJson(data: IPayload) {
         return JSON.stringify({
             ...data
         })
-    } catch (err) {
-        throw err;
-    }
+    } catch (err) { }
 }
 
 export enum OpCode {

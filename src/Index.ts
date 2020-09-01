@@ -25,7 +25,7 @@ export default class ZuraaaJs extends EventEmitter {
     private heartbeatInterval?: any;
     private state: State = State.CONNECTING;
     private handler: PacketHandler = new PacketHandler(this);
-    public readonly endpoints: Endpoints = new Endpoints(this.options.url, this.options.port);
+    public readonly endpoints: Endpoints = new Endpoints(this.options.secure, this.options.url, this.options.port);
     public readonly cache: Cache = new Cache(this);
     constructor(public readonly options: IOptions, public readonly client?: Client) {
         super();
@@ -74,7 +74,10 @@ export default class ZuraaaJs extends EventEmitter {
             case OpCode.Dispatch: {
                 if (payload.t == Event.READY) {
                     this.state = State.CONNECTED;
-                    return this.debug('CORE', 'Ready')
+
+                    await this.cache.init(payload.d.users, payload.d.bots);
+
+                    this.debug('CORE', 'Ready');
                 }
                 this.handler.handlePacket(payload);
             }
@@ -93,9 +96,14 @@ export default class ZuraaaJs extends EventEmitter {
             console.log(`[${new Date().toLocaleTimeString()}] [DEBUG] [${namespace.toUpperCase()}] : ${message} | `, ...args)
     }
 }
-new ZuraaaJs({
-    secure: false,
-    url: '127.0.0.1',
-    port: 80,
-    debug: true,
-})
+const client = new Client()
+client.login('my secret token')
+client.on('ready', () => {
+
+    new ZuraaaJs({
+        secure: false,
+        url: '127.0.0.1',
+        port: 80,
+        debug: true,
+    }, client).on('botVoteAdd', (bot, user, votes) => console.log('bot ' + bot.id, user.id, votes));
+});
