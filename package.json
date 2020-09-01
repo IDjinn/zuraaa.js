@@ -1,0 +1,17 @@
+{
+  "name": "zuraaa.js",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsc && node build/Index.js"
+  },
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "node-fetch": "^2.6.0",
+    "ws": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/ws": "^7.2.6"
+  }
+}
