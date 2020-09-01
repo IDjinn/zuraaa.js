@@ -2,10 +2,10 @@ export interface IPayload {
     op: OpCode;
     d: any;
     s?: number;
-    t?: Events;
+    t?: Event;
 }
 
-export enum Events {
+export enum Event {
     READY,
     BOT_CREATE,
     BOT_DELETE,

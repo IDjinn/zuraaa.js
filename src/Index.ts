@@ -1,7 +1,10 @@
 import { Client } from 'discord.js';
 import Websocket from 'ws';
-import { parsePayload, OpCode, IPayload, payloadToJson, Events } from './util/Payload';
-import from 'events';
+import { parsePayload, OpCode, IPayload, payloadToJson, Event } from './util/Payload';
+import { EventEmitter } from 'events';
+import PacketHandler from './handlers/Index';
+import { Endpoints } from './util/Endpoints';
+import Cache from './util/Cache';
 
 export interface IOptions {
     secure: boolean | true;
@@ -21,7 +24,11 @@ export default class ZuraaaJs extends EventEmitter {
     private ws: Websocket;
     private heartbeatInterval?: any;
     private state: State = State.CONNECTING;
-    constructor(private options: IOptions, private client?: Client) {
+    private handler: PacketHandler = new PacketHandler(this);
+    public readonly endpoints: Endpoints = new Endpoints(this.options.url, this.options.port);
+    public readonly cache: Cache = new Cache(this);
+    constructor(public readonly options: IOptions, public readonly client?: Client) {
+        super();
         this.ws = new Websocket(`${options.secure ? 'wss' : 'ws'}://${options.url}:${options.port}`);
 
         this.ws.onopen = (event: Websocket.OpenEvent) => this.onOpen(event);
@@ -65,12 +72,14 @@ export default class ZuraaaJs extends EventEmitter {
             }
 
             case OpCode.Dispatch: {
-                if (payload.t == Events.READY) {
+                if (payload.t == Event.READY) {
                     this.state = State.CONNECTED;
-                    this.debug('CORE', 'Ready')
+                    return this.debug('CORE', 'Ready')
                 }
-                // Handler
+                this.handler.handlePacket(payload);
             }
+
+
         }
     }
 
