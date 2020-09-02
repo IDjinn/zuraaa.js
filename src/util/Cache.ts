@@ -14,7 +14,7 @@ export default class Cache {
         this.core.debug('CACHE', 'Loading cache from users and bots');
         let after = 0;
         for (let i = 1; i <= usersCount; i++) {
-            const res = await fetch(this.core.endpoints.users.fetch(100, after));
+            const res = await fetch(this.core.endpoints.users.fetch(null, after));
             if (!res.ok)
                 continue;
 
@@ -26,7 +26,7 @@ export default class Cache {
         }
         after = 0;
         for (let i = 1; i <= botsCount; i++) {
-            const res = await fetch(this.core.endpoints.bots.fetch(100, after));
+            const res = await fetch(this.core.endpoints.bots.fetch(null, after));
             if (!res.ok)
                 continue;
 
