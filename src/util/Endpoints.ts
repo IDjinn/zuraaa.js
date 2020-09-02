@@ -1,24 +1,24 @@
 
 
 export class Endpoints {
-    private formatedUrl: string;
-    constructor(public readonly secure: boolean, public readonly baseUrl: string, public readonly port = 80) {
-        this.formatedUrl = secure ? 'https://' : 'http://' + baseUrl + ':' + port + '/api';
+    private baseUrl: string;
+    constructor(public readonly secure: boolean, public readonly ip: string, public readonly port = 80) {
+        this.baseUrl = secure ? 'https://' : 'http://' + ip + ':' + port + '/api';
     }
 
     get bots() {
         return {
-            index: () => this.formatedUrl + '/bots/',
-            id: (botId: string) => this.formatedUrl + '/bots/' + botId,
-            fetch: (limit?: number, after?: number) => this.formatedUrl + `/bots?limit${limit}&after=${after}`
+            index: () => this.baseUrl + '/bots/',
+            id: (botId: string) => this.baseUrl + '/bots/' + botId,
+            fetch: (limit?: number = 100, after?: number = 0) => this.baseUrl + `/bots?limit${limit}&after=${after}`
         }
     }
 
     get users() {
         return {
-            index: () => this.formatedUrl + '/users/',
-            id: (userId: string) => this.formatedUrl + '/users/' + userId,
-            fetch: (limit?: number, after?: number) => this.formatedUrl + `/users?limit${limit}&after=${after}`
+            index: () => this.baseUrl + '/users/',
+            id: (userId: string) => this.baseUrl + '/users/' + userId,
+            fetch: (limit?: number = 100, after?: number = 0) => this.baseUrl + `/users?limit${limit}&after=${after}`
         }
     }
 }
