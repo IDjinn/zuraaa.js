@@ -1,4 +1,4 @@
-import ZuraaaJs from "../Index";
+import Client from "../Index";
 import { User } from "discord.js";
 
 export default class Bot {
@@ -9,7 +9,7 @@ export default class Bot {
     public readonly tags: string;
 
     private dUser?: User;
-    constructor(json: any, private core: ZuraaaJs) {
+    constructor(json: any, private core: Client) {
         this.id = json.id;
         this.description = json.description;
         this.votes = json.votes;

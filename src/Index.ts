@@ -1,16 +1,18 @@
-import { Client } from 'discord.js';
+import { Client as DiscordClient, Guild } from 'discord.js';
 import Websocket from 'ws';
 import { parsePayload, OpCode, IPayload, payloadToJson, Event } from './util/Payload';
 import { EventEmitter } from 'events';
 import PacketHandler from './handlers/Index';
 import { Endpoints } from './util/Endpoints';
 import Cache from './util/Cache';
+import axios from 'axios';
 
 export interface IOptions {
     secure: boolean | true;
     url: string;
     port: number | 80;
     debug: boolean | false;
+    token: string;
 }
 
 export enum State {
@@ -20,21 +22,42 @@ export enum State {
     DESTROYED
 }
 
-export default class ZuraaaJs extends EventEmitter {
+export default class Client extends EventEmitter {
     private ws: Websocket;
     private heartbeatInterval?: any;
     private state: State = State.CONNECTING;
+    public readonly token: string = this.options.token;
     private handler: PacketHandler = new PacketHandler(this);
     public readonly endpoints: Endpoints = new Endpoints(this.options.secure, this.options.url, this.options.port);
     public readonly cache: Cache = new Cache(this);
-    constructor(public readonly options: IOptions, public readonly client?: Client) {
+    constructor(public readonly options: IOptions, public readonly client: DiscordClient) {
         super();
-        this.ws = new Websocket(`${options.secure ? 'wss' : 'ws'}://${options.url}:${options.port}`);
+        this.client.on('guildCreate', () => this.update());
+        this.client.on('guildDelete', () => this.update());
 
+        this.ws = new Websocket(`${options.secure ? 'wss' : 'ws'}://${options.url}:${options.port}`);
         this.ws.onopen = (event: Websocket.OpenEvent) => this.onOpen(event);
         this.ws.onclose = (event: Websocket.CloseEvent) => this.onClose(event);
         this.ws.onerror = (event: Websocket.ErrorEvent) => this.onError(event);
         this.ws.onmessage = (event: Websocket.MessageEvent) => this.onMessage(event);
+    }
+
+    private async update() {
+        let retry = 5;
+        do {
+            try {
+                const req = await axios.patch(this.endpoints.bots.id(this.client.user!.id), {
+                    token: this.token,
+                    data: {
+                        guilds: this.client.guilds.cache.size
+                    }
+                });
+
+                if (req.status == 204)
+                    return;
+            } catch (e) { }
+        }
+        while (retry >= 0);
     }
 
     private async onOpen(event: Websocket.OpenEvent) {
@@ -56,17 +79,17 @@ export default class ZuraaaJs extends EventEmitter {
                     this.send({ op: OpCode.Heartbeat, d: {} });
                 }, payload.d.heartbeat_interval);
 
-                this.send({ op: OpCode.Identify, d: { token: 'pass' } })
+                this.send({ op: OpCode.Identify, d: { token: this.token } })
                 break;
 
             case OpCode.InvalidSession: {
                 clearInterval(this.heartbeatInterval);
                 this.state = State.DESTROYED;
                 if (payload.d && payload.d.code == 401) {
-                    console.error('Token provided is invalid.');
+                    throw new Error('Token provided is invalid.');
                 }
                 else {
-                    console.error('Error critical: ' + payload.d);
+                    throw new Error('Error critical: ' + payload.d);
                 }
                 break;
             }
@@ -78,6 +101,7 @@ export default class ZuraaaJs extends EventEmitter {
                     await this.cache.init(payload.d.users, payload.d.bots);
 
                     this.debug('CORE', 'Ready');
+                    this.emit('ready');
                 }
                 this.handler.handlePacket(payload);
             }
@@ -96,14 +120,3 @@ export default class ZuraaaJs extends EventEmitter {
             console.log(`[${new Date().toLocaleTimeString()}] [DEBUG] [${namespace.toUpperCase()}] : ${message} | `, ...args)
     }
 }
-const client = new Client()
-client.login('my secret token')
-client.on('ready', () => {
-
-    new ZuraaaJs({
-        secure: false,
-        url: '127.0.0.1',
-        port: 80,
-        debug: true,
-    }, client).on('botVoteAdd', (bot, user, votes) => console.log('bot ' + bot.id, user.id, votes));
-});

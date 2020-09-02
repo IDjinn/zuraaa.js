@@ -1,4 +1,4 @@
-import ZuraaaJs from "../Index";
+import Client from "../Index";
 import { User as DiscordUser } from 'discord.js';
 
 export default class User {
@@ -7,7 +7,7 @@ export default class User {
     public readonly details: IUserDetails;
 
     private dUser?: DiscordUser;
-    constructor(json: any, private core: ZuraaaJs) {
+    constructor(json: any, private core: Client) {
         this.id = json.id;
         this.dates = json.dates;
         this.details = json.details;

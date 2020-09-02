@@ -2,13 +2,13 @@ import { Collection } from "discord.js";
 import Bot from "../structures/Bot";
 import User from "../structures/User";
 import fetch from 'node-fetch';
-import ZuraaaJs from "../Index";
+import Client from "../Index";
 
 
 export default class Cache {
     private userCache = new Collection<string, User>();
     private botCache = new Collection<string, Bot>();
-    constructor(private readonly core: ZuraaaJs) { }
+    constructor(private readonly core: Client) { }
 
     public async init(usersCount: number, botsCount: number) {
         this.core.debug('CACHE', 'Loading cache from users and bots');

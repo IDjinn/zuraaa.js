@@ -1,9 +1,9 @@
 import { IPacket } from "../Index";
-import ZuraaaJs from "../../Index";
+import Client from "../../Index";
 import { IPayload } from "../../util/Payload";
 
 export default class BotPacket implements IPacket {
-    constructor(private core: ZuraaaJs) { }
+    constructor(private core: Client) { }
 
     public async parse(payload: IPayload) {
         const { bot: botId, votes, user: userId } = payload.d;
